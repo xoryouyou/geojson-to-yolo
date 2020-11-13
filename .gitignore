@@ -1,0 +1,5 @@
+env/
+out/
+data/geojson/
+data/tiles/original/
+data/tiles/jobs.txt
