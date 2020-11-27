@@ -5,7 +5,7 @@ OUT=./tif/
 # echo "Creating $OUT"
 mkdir -p $OUT
 
-find . -name "*.ecw" -print0 | while read -d $'\0' FILE
+find ./tiles/ -name "*.ecw" -print0 | while read -d $'\0' FILE
 do
     TARGET=$( echo $FILE | cut -d "/" -f 4)
     TARGET=${TARGET/.ecw/.tif}

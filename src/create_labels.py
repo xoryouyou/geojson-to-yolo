@@ -10,6 +10,7 @@ import tqdm
 import itertools as it
 import cProfile
 from math import sqrt
+import os
 
 def coords_to_pixels(transformer, src, lon, lat):
     # transformer = Transformer.from_crs("epsg:4326", src.crs)
@@ -44,8 +45,9 @@ def worker(data):
     count = 0
     for cars in car_geometries:
         # print("CAR",cars,car_geometries[cars])
+
         car_shape = shape(car_geometries[cars])
-        
+
         for tile in tile_shapes:
 
             print("\t\t {} contains {} -> {} ".format(tile["image"],cars,tile["shape"].contains(car_shape)))
@@ -118,7 +120,7 @@ def find_tile_geometry(image,tiles):
             # print("found tile",tile["geometry"])
             return tile["geometry"]
 
-def main(car_geometries_json, tile_to_car_json):
+def main(tile_path, label_path, tiles_bbox, car_geometries_json, tile_to_car_json):
     car_geometries_file = open(car_geometries_json, "r")
     car_geometries = json.load(car_geometries_file)
     car_geometries_file.close()
@@ -127,7 +129,7 @@ def main(car_geometries_json, tile_to_car_json):
     tile_to_car = json.load(tile_to_car_file)
     tile_to_car_file.close()
 
-    tiles_file = open("tiles.geojson", "r")
+    tiles_file = open(tiles_bbox, "r")
     tiles = json.load(tiles_file)
     tiles_file.close()
 
@@ -137,7 +139,7 @@ def main(car_geometries_json, tile_to_car_json):
         
         t = find_tile_geometry(tile, tiles)
         t_shape = shape(t)
-        src = rasterio.open("./raw/tif/"+tile)
+        src = rasterio.open(os.path.join(tile_path,tile))
 
         # print("TSHAPE:",t_shape)
         
@@ -148,35 +150,54 @@ def main(car_geometries_json, tile_to_car_json):
             # print("CAR:",car)
 
             car_shape = shape(car_geometries[car])
-            # print(t_shape.contains(car_shape))
 
+            # break
+            # print(t_shape.contains(car_shape))
+            if car_shape.geom_type == 'Point':
+            
+                min_lon, min_lat, max_lon, max_lat = car_shape.bounds
+
+
+                center_y, center_x = coords_to_pixels(transformer, src, min_lon, min_lat)
+                
+                pixel_size = 16
+                width = pixel_size
+                height = pixel_size 
+                
+                labels.append("0 {} {} {} {}".format(
+                    float(center_x / src.width),
+                    float(center_y / src.height),
+                    float(width / src.width),
+                    float(height / src.height)
+                ))
+            else:
      
 
-            min_lon, min_lat, max_lon, max_lat = car_shape.bounds
-            top_py, top_px = coords_to_pixels(transformer, src, min_lon, min_lat)
-            bottom_py, bottom_px = coords_to_pixels(transformer, src, max_lon, max_lat)
+                min_lon, min_lat, max_lon, max_lat = car_shape.bounds
+                top_py, top_px = coords_to_pixels(transformer, src, min_lon, min_lat)
+                bottom_py, bottom_px = coords_to_pixels(transformer, src, max_lon, max_lat)
 
-            # print("BOUNDS:", car_shape.bounds)
-            # print("min max:",min_lon,min_lat,max_lon,max_lat)
-            # print(top_px,top_py, bottom_px,bottom_py)
+                print("BOUNDS:", car_shape.bounds)
+                print("min max:",min_lon,min_lat,max_lon,max_lat)
+                print(top_px,top_py, bottom_px,bottom_py)
 
-            center_x = (top_px + bottom_px) / 2
-            center_y = (top_py + bottom_py) / 2
+                center_x = (top_px + bottom_px) / 2
+                center_y = (top_py + bottom_py) / 2
 
 
-            width = abs( top_px - bottom_px)
-            height = abs( top_py - bottom_py)
+                width = abs( top_px - bottom_px)
+                height = abs( top_py - bottom_py)
 
-            # print("width {} height {}".format(width,height))
-            # width = top_px - bottom_px
-            # height = bottom_py - top_py
+                # print("width {} height {}".format(width,height))
+                # width = top_px - bottom_px
+                # height = bottom_py - top_py
 
-            labels.append("0 {} {} {} {}".format(
-                float(center_x / src.width),
-                float(center_y / src.height),
-                float(width / src.width),
-                float(height / src.height)
-            ))
+                labels.append("0 {} {} {} {}".format(
+                    float(center_x / src.width),
+                    float(center_y / src.height),
+                    float(width / src.width),
+                    float(height / src.height)
+                ))
             # print("0 {} {} {} {}".format(
             #     float(center_x / src.width),
             #     float(center_y / src.height),
@@ -184,7 +205,7 @@ def main(car_geometries_json, tile_to_car_json):
             #     float(height / src.height)
             # ))
     
-        label_file_name = "./raw/labels/"+tile.replace(".tif",".txt")
+        label_file_name = os.path.join(label_path,tile.replace(".tif",".txt"))
         print("writing to ", label_file_name, " lines ", len(labels))
         label_file = open(label_file_name,"w")
         label_file.write("\n".join(labels))
@@ -219,8 +240,10 @@ if __name__ == "__main__":
 
     # pr = cProfile.Profile()
     # pr.enable()
-    
-    main("car_geometries.json","tile_to_car.json")
+    tile_path = "/run/media/xoryouyou/Data/datasets/berlin_ORTHO_2019/tif"
+    label_path = "./out/labels/"
+    tiles_bbox = "./out/tiles_bbox.geojson"
+    main(tile_path, label_path, tiles_bbox, "out/object_geometries.json", "out/tile_to_object.json")
     
     # pr.disable()
     # pr.print_stats(sort='time')

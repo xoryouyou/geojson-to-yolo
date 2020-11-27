@@ -25,7 +25,7 @@ def fetch_annotations(annotation_file, image_width, image_height):
 
         half_width = values[2] / 2
         half_height = values[3] / 2
-
+        
         # force to int
         scaled_bbox = [
             int((values[0] - half_width) * image_width),
@@ -33,6 +33,7 @@ def fetch_annotations(annotation_file, image_width, image_height):
             int((values[0] + half_width) * image_width),
             int((values[1] + half_height) * image_height)
         ]
+        
         bboxes.append(scaled_bbox)
 
     return (bboxes, labels, annotations)
@@ -79,9 +80,7 @@ def slice_image(image_file, annotation_file, slice_height=256, slice_width=256, 
         image_height, image_width, channels = img.shape
 
     bboxes, labels, annotations = fetch_annotations(annotation_file, image_width, image_height)
-
-
- 
+     
     if debug:
         print("BBOX:",bboxes[0] , " anno ", annotations[0])
         for bbox in bboxes:
@@ -147,7 +146,7 @@ def slice_image(image_file, annotation_file, slice_height=256, slice_width=256, 
 
             for bbox_idx, bbox in enumerate(bboxes):
                 is_in = a_fully_in_b(bbox, slice_bbox)
-                # print("Check:", bbox, " in ", slice_bbox, is_in)
+
                 if is_in:
                     atleast_one_bbox = True
                     slice_annotations.append(annotations[bbox_idx])
@@ -169,13 +168,14 @@ def slice_image(image_file, annotation_file, slice_height=256, slice_width=256, 
                             (255,255,255), 2)
 
             if atleast_one_bbox:
-                pass
-                # print("Found: ",len(slice_annotations), " annotations in slice")
+                
+              
              
 
                 slice_annotation_file_name = output_path+"labels/"+image_file.split("/")[-1][:-4]+"_{:04d}".format(slice_count)+".txt"
                 slice_image_file_name = output_path+"images/"+image_file.split("/")[-1][:-4]+"_{:04d}".format(slice_count)+".png"
                 if debug:
+                    print("Found: ",len(slice_annotations), " annotations in slice")
                     print("Slice Image {:04d}:  {}".format(slice_count,slice_image_file_name))
             
                 # print("filename:", slice_annotation_file_name)
@@ -259,15 +259,16 @@ if __name__ == "__main__":
     # TODO: argparse, create&check out folders,  multiprocessin pool
     
     # SLICE
-    # images = glob.glob("../datasets/berlin_ORTHO_2019/images/*.png")    
+    # images = glob.glob("/run/media/xoryouyou/Data/datasets/berlin_ORTHO_2019/images/*.png")    
 
     # for idx, image in enumerate(tqdm.tqdm(images)):
-    #     annotation_file = image.replace("images","labels").replace(".png",".txt")
+    #     annotation_file = image.replace("images","tree_labels").replace(".png",".txt")
+        
     #     if not os.path.isfile(annotation_file):
     #         print(" NO annotation for ",image)
     #         continue
         
-    #     slice_image(image, annotation_file,output_path="../datasets/berlin_ORTHO_2019/slices/")
+    #     slice_image(image, annotation_file,output_path="./out/slices/")
 
     # images = glob.glob("../datasets/dota/validation/images/*.png")    
 
@@ -291,20 +292,20 @@ if __name__ == "__main__":
     # annotation_file = "../Data/datasets/berlin_ORTHO_2019/labels/dop20rgb_370_5806_2_be_2019.txt"
 
     # # # annotate
-    # image_file = "../Data/datasets/berlin_ORTHO_2019/slices/images/dop20rgb_368_5808_2_be_2019_1300.png"
-    # annotation_file = "../Data/datasets/berlin_ORTHO_2019/slices/labels/dop20rgb_368_5808_2_be_2019_1300.txt"
+    image_file = "./out/car_slices/images/dop20rgb_392_5818_2_be_2019_0086.png"
+    annotation_file = "./out/car_slices/labels/dop20rgb_392_5818_2_be_2019_0086.txt"
     
-    # plot_annotations(image_file, annotation_file)
+    plot_annotations(image_file, annotation_file)
 
-    # # # wait and show image
-    # # # break if images was closed by window manager or ESC was hit
-    # while True:
-    #     keyCode = cv2.waitKey(1)
+    # # wait and show image
+    # # break if images was closed by window manager or ESC was hit
+    while True:
+        keyCode = cv2.waitKey(1)
 
-    #     if keyCode == 27:
-    #         break
-    #     if cv2.getWindowProperty("Image", cv2.WND_PROP_VISIBLE) < 1:
-    #         break
+        if keyCode == 27:
+            break
+        if cv2.getWindowProperty("Image", cv2.WND_PROP_VISIBLE) < 1:
+            break
 
-    # # cleanup
-    # cv2.destroyAllWindows()
+    # cleanup
+    cv2.destroyAllWindows()

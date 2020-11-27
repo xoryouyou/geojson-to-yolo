@@ -69,5 +69,5 @@ def main(tile_folder, out_file):
     out.close()
 
 if __name__ == "__main__":
-    main("raw/tif", "tiles.geojson")
+    main("raw/tif", "tiles_bbox.geojson")
 

@@ -1,6 +1,35 @@
-# Workflow
+# Radagast
+
+Question: How many trees are there? Sidequest... How many cars are there
+Goal: Automate counting of trees 
+How: Build machine-learning infrastructure from satellite images with trees crown images extracted based on opendata tree lang registers.
+
+
+## Idea
+
+* Get a set of information about trees like what kind, how old and where it stands
+* Fetch & Prepare satelite data
+  * sentinel account & info
+  * sentinelsat python
+  * download tiles containing berlin T32UVU,T32UUU
+  * merge R,G,B channels
+  * crop berlin border
+  
+
+* filter tree data
+  * remove trees with missing info -> null fields
+  * sort to genus -> pivot table
+  * remove genuses with too few samples < 1000
+  
+* loop over tree data
+  * extract 64x64 pixels around lat/lon from the tree
+  * write to file with genus_lat_lon_circumference.jpg
+
+
 
 ## Get the Data
+
+### Satellite Images
 
 From: [daten.berlin.de](https://daten.berlin.de/datensaetze/digitale-farbige-orthophotos-2019-dop20rgb-wms-1)
 
@@ -23,6 +52,10 @@ https://fbinter.stadt-berlin.de/fb/atom/DOP/dop20rgb_2019/Suedost.zip
 https://fbinter.stadt-berlin.de/fb/atom/DOP/dop20rgb_2019/Suedwest.zip
 https://fbinter.stadt-berlin.de/fb/atom/DOP/dop20rgb_2019/West.zip
 ```
+
+### Get the Cars geojson
+
+Ask Hans Hack @hnshck or http://hanshack.com/ 
 
 ## Convert
 
@@ -126,3 +159,43 @@ This creates a folder with `.txt` files containing Yolo format lines
 0 0.64705 0.846 0.0029 0.0028
 ```
 ### Happy training!
+
+
+
+
+## Optional Tree Stuff
+
+
+Opendata provided by OpenData from Stadtentwicklung Berlin
+License: Open Data  Nutzungsbedingungen NutzIII der Stadtentwicklung Berlin  
+
+https://opendata-esri-de.opendata.arcgis.com/datasets/05c3f9d7dea6422b86e30967811bddd7_0
+https://opendata.arcgis.com/datasets/05c3f9d7dea6422b86e30967811bddd7_0.geojson
+
+Count trees: 565363
+
+Features:
+* "FID": 1, 
+* "StandortNr": "027", 
+* "Kennzeich": "05601-Str", 
+* "NameNr": "GANDENITZER WEG", 
+* "Art_Dtsch": "JAPANISCHE ZIERKIRSCHE 'KANZAN'", 
+* "Art_Bot": "PRUNUS SERRULATA 'KANZAN'", 
+* "GATTUNG_DEUTSCH": null, 
+* "Gattung": "PRUNUS", 
+* "Pflanzjahr": "1970", 
+* "Standalter": 47.0, 
+* "KroneDurch": null, 
+* "Stammumfg": 63, 
+* "BaumHoehe": 10.0, 
+* "BEZIRK": "Reinickendorf", 
+* "Eigentuemer": "Land Berlin", 
+* "ALK_Nr4st": 27.0, 
+* "StrName": "Gandenitzer Weg", 
+* "HausNr": null, 
+* "Zusatz": null, 
+* "Kategorie": "Straßenbaum", 
+* "ORIG_FID": 1, 
+* "geometry": { "type": "Point", "coordinates": [ 13.364091607000034, 52.59961781100003 ] } 
+
+

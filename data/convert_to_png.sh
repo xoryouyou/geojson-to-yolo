@@ -5,7 +5,7 @@ OUT=./png/
 echo "Creating $OUT"
 mkdir -p $OUT
 
-find ./ecw/ -name "*.ecw" -print0 | while read -d $'\0' FILE
+find ./tiles/ -name "*.ecw" -print0 | while read -d $'\0' FILE
 do
     echo $FILE
     TARGET=$( echo $FILE | cut -d "/" -f 4)
